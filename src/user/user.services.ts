@@ -4,8 +4,6 @@ import {Model,QueryTypes,Op} from "sequelize"
 import { User } from './user.schema';
 import * as bcrypt from "bcrypt";
 import {SequelizeModule,InjectModel} from "@nestjs/sequelize"
-
-
 @Injectable()
 export class UserServices{
     constructor(@InjectModel(User) private userModel:typeof User){}
@@ -45,5 +43,8 @@ export class UserServices{
   }
   async verifyOtp(credentials:any):Promise<any>{
     return await this.userModel.findOne({where:{email:credentials.email,otp:credentials.otp}});
+  }
+  async delete(id:String):Promise<any>{
+    return this.userModel.destroy({where:{id:id}});
   }
 }

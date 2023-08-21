@@ -54,4 +54,14 @@ async verifyOtp(@Req() req,@Res() res, @Body() credentials:{email:String,otp:Num
         return res.status(HttpStatus.BAD_REQUEST).json({msg:"OTP Incorrect!"})
     }
 }
+@Delete("/:id")
+async deleteUser(@Req() req,@Res() res,@Param() credentials:{id:String}):Promise<any>{
+  const result=await this.authService.delete(credentials.id);
+  console.log("result: ", result);
+  if(result){
+    return res.status(HttpStatus.OK).json({msg:"Deleted"})
+  }else{
+    return res.status(HttpStatus.NOT_FOUND).json({msg:"Not Found!"})
+  }
+}
 }
