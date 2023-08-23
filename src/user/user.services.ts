@@ -47,4 +47,7 @@ export class UserServices{
   async delete(id:String):Promise<any>{
     return this.userModel.destroy({where:{id:id}});
   }
+  async findByUUID(id:String):Promise<any>{
+    return await this.userModel.findOne({where:{uuid:id}});
+  }
 }

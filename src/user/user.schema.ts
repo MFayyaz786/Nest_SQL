@@ -21,6 +21,10 @@ otp:number
 @Default(DataTypes.NOW)
 @Column
 otpExpire:Date
+
+@Default(null)
+@Column
+token:string
 }
 export  interface User extends Document{
      id:string,
@@ -28,5 +32,6 @@ export  interface User extends Document{
      email:string,
      password:string,
      otp:number,
-     otpExpire:Date
+     otpExpire:Date,
+     token:string
 }
