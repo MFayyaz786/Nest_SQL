@@ -8,17 +8,17 @@ import { JwtPayload } from 'jsonwebtoken';
 
 @Controller('auth')
 export class UserController{
-    constructor(private authService:UserServices,private authServices:AuthServices){}
+    constructor(private userService:UserServices,private authServices:AuthServices){}
 @Post()
 async signUp(@Res() res,@Body() authData:User):Promise<User>{
-    const result=await this.authService.signUp(authData);
+    const result=await this.userService.signUp(authData);
     return res.status(HttpStatus.OK).json({msg:"Registered successfully"})
 }
 @Post('login')
 async singIn(@Res() res,@Req() req,@Body() signInData):Promise<User>{
-    const user=await this.authService.signIn(signInData.email);
+    const user=await this.userService.signIn(signInData.email);
     if(user){
-     const validatePassword = await this.authService.validatePassword(signInData.password, user.password);
+     const validatePassword = await this.userService.validatePassword(signInData.password, user.password);
       if (validatePassword) {
       const uuid = uuidv4();
       const refreshToken =await jwtServices.create({uuid, type: "user"} );
@@ -48,7 +48,7 @@ async singIn(@Res() res,@Req() req,@Body() signInData):Promise<User>{
 
 @Post('requestOtp')
 async requestOtp(@Req() req,@Res() res,@Body() credential:{email:String}):Promise<User>{
-  const result=await this.authService.requestOtp(credential.email);
+  const result=await this.userService.requestOtp(credential.email);
   if(result[0]<=0){
   return res.status(HttpStatus.BAD_REQUEST).json({msg:"Otp Not Sent!"})
   }
@@ -56,11 +56,11 @@ async requestOtp(@Req() req,@Res() res,@Body() credential:{email:String}):Promis
 }
 @Post('verifyOtp')
 async verifyOtp(@Req() req,@Res() res, @Body() credentials:{email:String,otp:Number}):Promise<User>{
-    const isExpire=await this.authService.isExpired(credentials.email);
+    const isExpire=await this.userService.isExpired(credentials.email);
     if(!isExpire.dataValues){
         return  res.status(HttpStatus.BAD_REQUEST).json({msg:"OTP Expired!"})
     }
-    const result=await this.authService.verifyOtp(credentials);
+    const result=await this.userService.verifyOtp(credentials);
     if(result!==null){
         return res.status(HttpStatus.OK).json({msg:"OTP Verified"})
     }else{
@@ -69,7 +69,7 @@ async verifyOtp(@Req() req,@Res() res, @Body() credentials:{email:String,otp:Num
 }
 @Delete("/:id")
 async deleteUser(@Req() req,@Res() res,@Param() credentials:{id:String}):Promise<any>{
-  const result=await this.authService.delete(credentials.id);
+  const result=await this.userService.delete(credentials.id);
   console.log("result: ", result);
   if(result){
     return res.status(HttpStatus.OK).json({msg:"Deleted"})
@@ -99,5 +99,10 @@ async refreshToken(@Res() res,@Req() req,@Body() body:{refreshToken:String}):Pro
     } else {
      return res.status(HttpStatus.UNAUTHORIZED).json({ msg: "Login please" });
     }
+  }
+  @Get('all')
+  async getAllUser(@Req() req,@Res() res):Promise<any>{
+    const result=await this.userService.getAll();
+    return res.status(HttpStatus.OK).json({msg:"List",data:result})
   }
 }

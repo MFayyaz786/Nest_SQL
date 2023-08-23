@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { User } from './user/user.schema';
 import { APP_FILTER, MiddlewareBuilder } from '@nestjs/core';
 import { GlobalExceptionFilter } from './middleware/globelErrorHandler';
+import { Authentication } from './middleware/authentication.middleware';
+
 @Module({
   imports: [SequelizeModule.forRoot({
       dialect: 'mysql',
@@ -23,4 +25,11 @@ import { GlobalExceptionFilter } from './middleware/globelErrorHandler';
   providers: [AppService,{provide:APP_FILTER,
 useClass:GlobalExceptionFilter}],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(Authentication)
+      .forRoutes('*'); // Apply the middleware to all routes
+  }
+}
+//export class AppModule {}

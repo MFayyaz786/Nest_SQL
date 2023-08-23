@@ -6,36 +6,28 @@ import * as bcrypt from "bcrypt";
 import {SequelizeModule,InjectModel} from "@nestjs/sequelize"
 @Injectable()
 export class UserServices{
-    constructor(@InjectModel(User) private userModel:typeof User){}
+    constructor(@InjectModel(User) private userModel:typeof User,private sequelize:Sequelize){}
     async signUp(userData:Partial<User>):Promise<User>{
         const salt=await bcrypt.genSalt(10);
         userData.password=await bcrypt.hash(userData.password,salt);
-        console.log("userData",userData)
-    const result= await this.userModel.create(userData);
-    return  result
+        return  await this.userModel.create(userData);
     }
 
     async signIn(email:String):Promise<User>{
-    return await this.userModel.findOne({where:{email:email}});
+       return await this.userModel.findOne({where:{email:email}});
     }
 
     async validatePassword(password:string, realPassword:string):Promise<User>{
-    console.log(password, realPassword);
-    const valid = await bcrypt.compare(password, realPassword);
-    console.log("valid: ", valid);
-    return valid;
+       return await bcrypt.compare(password, realPassword);;
   }
 
   async requestOtp(email:String):Promise<any>{
     const expireTime = new Date();
-  expireTime.setMinutes(expireTime.getMinutes() + 5);
-  console.log("expireTime: ", expireTime);
-
+    expireTime.setMinutes(expireTime.getMinutes() + 5);
     return await this.userModel.update({otp:1122,otpExpire:expireTime},{where:{email:email}})
   }
   async isExpired(email:String):Promise<any>{
     const now=new Date();
-    console.log("now: ", now);
     const result=await this.userModel.findOne({where:{email:email,otpExpire: {
         [Op.gt]: now,
       },}})
@@ -49,5 +41,9 @@ export class UserServices{
   }
   async findByUUID(id:String):Promise<any>{
     return await this.userModel.findOne({where:{uuid:id}});
+  }
+  async getAll():Promise<any>{
+    const [result]=await this.sequelize.query('select * from users where deleted=false');
+    return result;
   }
 }

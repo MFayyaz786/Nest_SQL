@@ -12,7 +12,7 @@ const encryptionMiddleware = asyncHandler((req:Request, res:Response, next:Funct
       
     } catch (err) {
       console.log(err);
-      res.status(HttpStatus.BAD_REQUEST).json("invalid request body")
+      res.status(HttpStatus.BAD_REQUEST).json({msg:"invalid request body"})
      //res.status(400).json({ error: "Invalid request body" });
     }
   }

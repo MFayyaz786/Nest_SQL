@@ -1,16 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
+import { NestMiddleware,Injectable } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';
-import jwtServices from './jwtServices';
-export async function authentication(req: Request, res: Response, next: NextFunction) {
-  const excludedPaths = [
-    '/api/v1/test',
+import jwtServices from '../utils/jwtServices';
+@Injectable()
+export class Authentication implements NestMiddleware{
+    excludedPaths = [
+    '/auth/all',
     '/api-docs',
     '/login1',
     '/refreshToken'
     // Add other URL conditions here
   ];
-
-  if (excludedPaths.some(path => req.url.startsWith(path) || req.url.endsWith(path))) {
+async use(req: Request, res: Response, next: NextFunction) {
+  if (this.excludedPaths.some(path => req.originalUrl.startsWith(path) || req.originalUrl.endsWith(path))) {
     next();
     return;
   }
@@ -24,13 +26,14 @@ export async function authentication(req: Request, res: Response, next: NextFunc
     if(tokenData){
     next();
     }else{
-      return res.status(HttpStatus.UNAUTHORIZED).json({ msg: 'Authentication failed' });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ msg: 'Authentication failed!' });
     }
   } catch (error) {
     if (error.message === 'jwt expired') {
-      res.status(HttpStatus.UNAUTHORIZED).json({ msg: 'Authentication failed' });
+      res.status(HttpStatus.UNAUTHORIZED).json({ msg: 'Authentication failed!' });
     } else {
       res.status(HttpStatus.UNAUTHORIZED).json({ msg: error.message });
     }
   }
+}
 }
